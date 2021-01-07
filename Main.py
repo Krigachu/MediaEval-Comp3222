@@ -7,7 +7,7 @@ import sklearn
 
 print(sys.path)
 #sys.path.append("C:/Program Files/Anaconda/envs/Coursework")
-#sys.path.append("C:/Program Files/Anaconda/envs/Coursework/Lib/site-packages")
+sys.path.append("C:/Program Files/Anaconda/envs/Coursework/Lib/site-packages")
 
 import nltk
 from nltk.corpus import stopwords
@@ -15,6 +15,8 @@ from nltk.tokenize import word_tokenize
 from string import punctuation
 
 import numpy as np
+from langdetect import detect
+from langdetect import detect_langs
 
 #nltk.download("stopwords") # downloading stopwords
 
@@ -49,6 +51,25 @@ def showLabelComposition():
     plt.savefig(fname="Data Visualisation/Label composition.png")
     plt.show()
 
+def showLanguageComposition():
+    languageComposition = trainingSet["language"].value_counts()
+    print(languageComposition)
+    totalLanguageTypes = trainingSet["language"].count()
+    #languageTypes = trainingSet["language"].unique().sort
+    languageTypes = trainingSet["language"].value_counts().index
+    #print(languageTypes)
+
+    for counter, label in enumerate(languageTypes):
+        print(label, " ", str((languageComposition[counter] / totalLanguageTypes) * 100), "%")
+
+    plt.figure(1)
+    plt.pie(languageComposition,
+            labels=languageTypes
+             )
+    plt.title("The label composition of Training dataset")
+    plt.savefig(fname="Data Visualisation/Language composition.png")
+    plt.show()
+
 
 # TO DO:
 # CLEAN DATASET
@@ -67,27 +88,37 @@ print(len(trainingSet.drop_duplicates()))
 duplicatedSeries = trainingSet.duplicated()
 print(duplicatedSeries.loc[lambda x : x == True])
 
-print(trainingSet["username"].value_counts()) #some users have multiple posts in the same dataset
-
-example_sent = """This is a sample sentence, 
-                  showing off the stop words filtration."""
+#print(trainingSet["username"].value_counts()) #some users have multiple posts in the same dataset
 
 #stop_words = set(stopwords.words('english') +list(punctuation)) # adds punctuation to filtering
+
+#subTrainingSet = trainingSet[0:11]
 stop_words = set(stopwords.words('english'))
+tokenizedTweets = []
+languageDetected = []
 
 
-word_tokens = word_tokenize(example_sent)
+for index,row in trainingSet.iterrows():
+    tweetTokens = word_tokenize(row[1])
+    try:
+        lang = detect(row.iloc[1])
+        languageDetected.append(lang)
+    except:
+        lang = "error"
+        print("This row throws an error" + str(row.iloc[0]))
+        languageDetected.append(lang)
 
-filtered_sentence = [w for w in word_tokens if not w in stop_words]
+    for w in tweetTokens:
+        if w not in stop_words:
+            tokenizedTweets.append(w)
 
-filtered_sentence = []
+corpus = set(tokenizedTweets)
+print(corpus)
+print(len(corpus))
+trainingSet["language"] = languageDetected
 
-for w in word_tokens:
-    if w not in stop_words:
-        filtered_sentence.append(w)
+showLanguageComposition()
 
-print(word_tokens)
-print(filtered_sentence)
 
 #263004702072004608	one of these are dupes.
 #263030750415319040
