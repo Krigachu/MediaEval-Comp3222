@@ -43,7 +43,7 @@ def showLabelComposition(trainingSet):
     labelComposition = trainingSet["label"].value_counts()
     totalLabels = trainingSet["label"].count()
     groundTruthTypes = ["Fake", "Real", "Humor"]
-    # print(labelComposition)
+    print(labelComposition)
     for counter, label in enumerate(groundTruthTypes):
         print(label, " ", str((labelComposition[counter] / totalLabels) * 100), "%")
 
