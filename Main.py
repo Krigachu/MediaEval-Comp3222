@@ -19,7 +19,9 @@ import numpy as np
 from langdetect import detect, DetectorFactory
 #from langdetect import detect_langs
 from textblob import TextBlob
+import emoji
 DetectorFactory.seed = 0
+
 
 #nltk.download("stopwords") # downloading stopwords
 
@@ -116,6 +118,137 @@ def showPolarityComposition(trainingSet):
 
     plt.show()
 
+def showEmojiComposition(trainingSet):
+    #emojiTypes = trainingSet["number of emojis"].value_counts().index # labels
+
+    realRecords = trainingSet[trainingSet["label"] =="real"]
+    fakeRecords = trainingSet[trainingSet["label"]=="fake"]
+    humourRecords = trainingSet[trainingSet["label"]=="humor"]
+    fakeRecords = pd.concat([fakeRecords,humourRecords])
+
+    # print(realRecords.iloc[:,6:9].head(10))
+    # print(fakeRecords.iloc[:,6:9].head(10))
+
+    realRecords = realRecords["number of emojis"].mean()
+    fakeRecords = fakeRecords["number of emojis"].mean()
+    #realRecords = realRecords["number of emojis"].sum()
+    #fakeRecords = fakeRecords["number of emojis"].sum()
+    print(realRecords)
+    print(fakeRecords)
+
+
+    emojiComposition = trainingSet["number of emojis"].value_counts()
+    #print(emojiComposition)
+    #totalemojiTypes = trainingSet["emoji"].count()
+
+    #for counter, label in enumerate(emojiTypes):
+    #   print(label, " ", str((emojiComposition[counter] / totalemojiTypes) * 100), "%")
+
+    plt.figure()
+    labels = ["Real","Fake"]
+    y_pos = np.arange(len(labels))
+    heightData = [realRecords,fakeRecords]
+
+    plt.bar(y_pos,heightData , align='center', alpha=0.5)
+    plt.xticks(y_pos, labels)
+    plt.ylabel('Usage')
+    plt.title('Mean Emoji usages in Fake and Real posts in the english training dataset')
+    plt.savefig(fname="Data Visualisation/Mean Emoji usages in Fake and Real posts in the english training dataset.png")
+
+    plt.show()
+
+def showMentionComposition(trainingSet):
+    #emojiTypes = trainingSet["number of emojis"].value_counts().index # labels
+
+    realRecords = trainingSet[trainingSet["label"] =="real"]
+    fakeRecords = trainingSet[trainingSet["label"]=="fake"]
+    humourRecords = trainingSet[trainingSet["label"]=="humor"]
+    fakeRecords = pd.concat([fakeRecords,humourRecords])
+
+    # print(realRecords.iloc[:,6:9].head(10))
+    # print(fakeRecords.iloc[:,6:9].head(10))
+
+    realRecords = realRecords["number of mentions"].mean()
+    fakeRecords = fakeRecords["number of mentions"].mean()
+    #realRecords = realRecords["number of mentions"].sum()
+    #fakeRecords = fakeRecords["number of mentions"].sum()
+    print(realRecords)
+    print(fakeRecords)
+
+    plt.figure()
+    labels = ["Real","Fake"]
+    y_pos = np.arange(len(labels))
+    heightData = [realRecords,fakeRecords]
+
+    plt.bar(y_pos,heightData , align='center', alpha=0.5)
+    plt.xticks(y_pos, labels)
+    plt.ylabel('Usage')
+    plt.title('Mean @mentions usages in Fake and Real posts in the english training dataset')
+    plt.savefig(fname="Data Visualisation/Mean @mention usages in Fake and Real posts in the english training dataset.png")
+
+    plt.show()
+
+def showURLComposition(trainingSet):
+    #emojiTypes = trainingSet["number of emojis"].value_counts().index # labels
+
+    realRecords = trainingSet[trainingSet["label"] =="real"]
+    fakeRecords = trainingSet[trainingSet["label"]=="fake"]
+    humourRecords = trainingSet[trainingSet["label"]=="humor"]
+    fakeRecords = pd.concat([fakeRecords,humourRecords])
+
+    # print(realRecords.iloc[:,6:9].head(10))
+    # print(fakeRecords.iloc[:,6:9].head(10))
+
+    #realRecords = realRecords["number of URLS"].mean()
+    #fakeRecords = fakeRecords["number of URLS"].mean()
+    realRecords = realRecords["number of URLS"].sum()
+    fakeRecords = fakeRecords["number of URLS"].sum()
+    print(realRecords)
+    print(fakeRecords)
+
+    plt.figure()
+    labels = ["Real","Fake"]
+    y_pos = np.arange(len(labels))
+    heightData = [realRecords,fakeRecords]
+
+    plt.bar(y_pos,heightData , align='center', alpha=0.5)
+    plt.xticks(y_pos, labels)
+    plt.ylabel('Usage')
+    plt.title('Total URL usages in Fake and Real posts in the english training dataset')
+    plt.savefig(fname="Data Visualisation/Total URL usages in Fake and Real posts in the english training dataset.png")
+
+    plt.show()
+
+def showHashtagsComposition(trainingSet):
+    #emojiTypes = trainingSet["number of emojis"].value_counts().index # labels
+
+    realRecords = trainingSet[trainingSet["label"] =="real"]
+    fakeRecords = trainingSet[trainingSet["label"]=="fake"]
+    humourRecords = trainingSet[trainingSet["label"]=="humor"]
+    fakeRecords = pd.concat([fakeRecords,humourRecords])
+
+    # print(realRecords.iloc[:,6:9].head(10))
+    # print(fakeRecords.iloc[:,6:9].head(10))
+
+    #realRecords = realRecords["number of URLS"].mean()
+    #fakeRecords = fakeRecords["number of URLS"].mean()
+    realRecords = realRecords["number of hashtags"].sum()
+    fakeRecords = fakeRecords["number of hashtags"].sum()
+    print(realRecords)
+    print(fakeRecords)
+
+    plt.figure()
+    labels = ["Real","Fake"]
+    y_pos = np.arange(len(labels))
+    heightData = [realRecords,fakeRecords]
+
+    plt.bar(y_pos,heightData , align='center', alpha=0.5)
+    plt.xticks(y_pos, labels)
+    plt.ylabel('Usage')
+    plt.title('Total Hashtag usages in Fake and Real posts in the english training dataset')
+    plt.savefig(fname="Data Visualisation/Total Hashtag usages in Fake and Real posts in the english training dataset.png")
+
+    plt.show()
 
 def detectTweetTextLanguage(row):
     try:
@@ -131,6 +264,7 @@ def detectPolarityOfTweet(row):
     try:
         blob = TextBlob(row.iloc[1])
         polarityOfBlob = blob.polarity
+        polarityScores.append(polarityOfBlob)
 
         if (polarityOfBlob == 0):
             polarityOfBlob ="neutral"
@@ -169,34 +303,42 @@ def featureGeneration(trainingSet):
         tweetTokens = word_tokenize(row[1])
         detectTweetTextLanguage(row)
         detectPolarityOfTweet(row)
-        detectLengthOfTweet(row)
+        detectTweetFeatures(row)
 
         for w in tweetTokens:
             if w not in stopWords:
                 tokenizedTweets.append(w)
 
 
-def detectLengthOfTweet(row):
-    numberOfCharacters.append(len(row[1]))
-    tweetTokens = word_tokenize(row[1])
-    URLs = re.findall(twitterLinkRegex,row[1])
-    hashtags = re.findall(hashtagRegex,row[1])
-    mentions = re.findall(mentionRegex,row[1])
+def detectTweetFeatures(row):
+    tweet = row[1]
+    numberOfCharacters.append(len(tweet))
+    tweetTokens = word_tokenize(tweet)
+    currentTokens = []
+    URLs = re.findall(twitterLinkRegex,tweet)
+    hashtags = re.findall(hashtagRegex,tweet)
+    mentions = re.findall(mentionRegex,tweet)
+    exclamations = re.findall(exclamationRegex,tweet)
+    questions = re.findall(questionRegex,tweet)
+    ellipsisR = re.findall(ellipsisRegex,tweet)
+
+    emojis = emoji.demojize(tweet)
+    emojis = re.findall(emojiRegex, emojis)
+    emojisTweet = [emoji.emojize(x) for x in emojis]
+
     for w in tweetTokens:
         if w not in stopWordsPunctuation:
+            currentTokens.append(w)
             tokenizedTweets.append(w)
 
-    if(len(URLs)==None):
-        URLs = 0
-    if (len(hashtags)==None):
-        hashtags = 0
-    if (len(mentions)==None):
-        hashtags = 0
-
-    numberOfWords.append(len(tweetTokens))
+    numberOfWords.append(len(currentTokens))
     numberOfUrls.append(len(URLs))
     numberOfHashtags.append(len(hashtags))
     numberOfMentions.append(len(mentions))
+    numberOfExclamations.append(len(exclamations))
+    numberOfQuestions.append(len(questions))
+    numberOfEllipsis.append(len(ellipsisR))
+    numberOfEmojis.append(len(emojisTweet))
 
 
 def printFirst7Records():
@@ -225,16 +367,29 @@ stopWords = set(stopwords.words("english"))
 stopWordsPunctuation = set(stopwords.words("english") + list(punctuation))
 twitterLinkRegex = "http:.*"
 #twitterLinkRegex = "http: \*/\*/t.co/* | http://t.co/*"
-hashtagRegex = "#([0-9]*[a-zA-Z]*)*"
-mentionRegex = "@([0-9]*[a-zA-Z]*)*"
+hashtagRegex = "#([0-9]*[a-zA-Z]*)+"
+mentionRegex = "@([0-9]*[a-zA-Z]*)+"
+exclamationRegex = "!"
+questionRegex = "\?"
+ellipsisRegex = "\.{3}"
+emojiRegex = r"(:[^:]*:)"
+#think about emoticon regex
+#need to extract named entities
+#locations
+#respected news agents
 
 
 
 tokenizedTweets = []
 languageDetected = []
 polarityTweet = []
+polarityScores = []
 numberOfCharacters = []
+numberOfExclamations = []
+numberOfQuestions = []
+numberOfEllipsis = []
 numberOfWords = []
+numberOfEmojis = []
 numberOfUrls = []
 numberOfHashtags = []
 numberOfMentions = []
@@ -248,8 +403,13 @@ print(len(corpus))
 #trainingSet.to_csv(path_or_buf="D:/Work/Uni work/Comp3222 - MLT/CW/comp3222-mediaeval/testing1.csv",encoding="utf8")
 trainingSet["language"] = languageDetected
 trainingSet["polarity"] = polarityTweet
+trainingSet["polarity score"] = polarityScores
 trainingSet["character length"] = numberOfCharacters
+trainingSet["number of exclamations"] = numberOfExclamations
+trainingSet["number of questions"] = numberOfQuestions
+trainingSet["number of ellipsis"] = numberOfEllipsis
 trainingSet["word length"] = numberOfWords
+trainingSet["number of emojis"] = numberOfEmojis
 trainingSet["number of URLS"] = numberOfUrls
 trainingSet["number of Hashtags"] = numberOfHashtags
 trainingSet["number of mentions"] = numberOfMentions
@@ -267,7 +427,7 @@ languageFilter = trainingSet["language"] == "en"
 englishTrainingSet = trainingSet[languageFilter].reset_index(drop=True)
 englishTrainingSet = englishTrainingSet.drop_duplicates(ignore_index=False) #11141
 trainingSet.to_csv(path_or_buf="D:/Work/Uni work/Comp3222 - MLT/CW/comp3222-mediaeval/testing2.csv",encoding="utf8")
-showLabelComposition(englishTrainingSet)
+
 
 #print("the shape of english records " ,str(englishTrainingSet.shape)) #10956
 #print("The shape of original records " ,str(trainingSet.shape)) #10955
@@ -279,9 +439,17 @@ showLabelComposition(englishTrainingSet)
 
 #showLanguageComposition(englishTrainingSet)
 
-showPolarityComposition(englishTrainingSet)
+#showLabelComposition(englishTrainingSet)
+#showPolarityComposition(englishTrainingSet)
+#showEmojiComposition(englishTrainingSet)
+#showMentionComposition(englishTrainingSet)
+showURLComposition(englishTrainingSet)
+showHashtagsComposition(englishTrainingSet)
+
 #englishTrainingSet
-print(englishTrainingSet["number of URLS"].value_counts())
+#print(englishTrainingSet["number of emojis"].value_counts())
+#index = englishTrainingSet["number of emojis"] == 16
+#print(englishTrainingSet[index])
 englishTrainingSet.to_csv(path_or_buf="D:/Work/Uni work/Comp3222 - MLT/CW/comp3222-mediaeval/englishTrainingSet.csv",encoding="utf8")
 
 #10956 records with english text according to detectLang
