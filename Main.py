@@ -20,6 +20,8 @@ from langdetect import detect, DetectorFactory
 #from langdetect import detect_langs
 from textblob import TextBlob
 import emoji
+from sklearn import svm
+from sklearn.metrics import mean_squared_error
 DetectorFactory.seed = 0
 
 
@@ -250,6 +252,158 @@ def showHashtagsComposition(trainingSet):
 
     plt.show()
 
+
+def showTweetComposition(trainingSet):
+    #polarityTypes = trainingSet["polarity"].value_counts().index # labels
+    labelTypes = ["no. exclamations","no. questions","no. ellipsis", "no. emojis","no. URLS","no. Hashtags","no. mentions"]
+    print(labelTypes)
+    
+    realRecords = trainingSet[trainingSet["label"] == "real"]
+    fakeRecords = trainingSet[trainingSet["label"] == "fake"]
+    humourRecords = trainingSet[trainingSet["label"] == "humor"]
+    #fakeRecords = pd.concat([fakeRecords,humourRecords])
+
+    # print(realRecords.iloc[:,6:9].head(10))
+    # print(fakeRecords.iloc[:,6:9].head(10))
+
+    realRecordsNumberOfCharacters = realRecords["character length"].mean()
+    fakeRecordsNumberOfCharacters = fakeRecords["character length"].mean()
+    humourRecordsNumberOfCharacters = humourRecords["character length"].mean()
+
+    realRecordsNumberOfExclamations = realRecords["number of exclamations"].mean()
+    fakeRecordsNumberOfExclamations = fakeRecords["number of exclamations"].mean()
+    humourRecordsNumberOfExclamations = fakeRecords["number of exclamations"].mean()
+
+    realRecordsNumberOfQuestions = realRecords["number of questions"].mean()
+    fakeRecordsNumberOfQuestions = fakeRecords["number of questions"].mean()
+    humourRecordsNumberOfQuestions = fakeRecords["number of questions"].mean()
+
+    realRecordsNumberOfEllipsis = realRecords["number of ellipsis"].mean()
+    fakeRecordsNumberOfEllipsis = fakeRecords["number of ellipsis"].mean()
+    humourRecordsNumberOfEllipsis = fakeRecords["number of ellipsis"].mean()
+
+    realRecordsNumberOfWords = realRecords["word length"].mean()
+    fakeRecordsNumberOfWords = fakeRecords["word length"].mean()
+    humourRecordsNumberOfWords = fakeRecords["word length"].mean()
+
+    realRecordsNumberOfEmojis = realRecords["number of emojis"].mean()
+    fakeRecordsNumberOfEmojis = fakeRecords["number of emojis"].mean()
+    humourRecordsNumberOfEmojis = fakeRecords["number of emojis"].mean()
+
+    realRecordsNumberOfURLS = realRecords["number of URLS"].mean()
+    fakeRecordsNumberOfURLS = fakeRecords["number of URLS"].mean()
+    humourRecordsNumberOfURLS = fakeRecords["number of URLS"].mean()
+
+    realRecordsNumberOfHashtags = realRecords["number of Hashtags"].mean()
+    fakeRecordsNumberOfHashtags = fakeRecords["number of Hashtags"].mean()
+    humourRecordsNumberOfHashtags = fakeRecords["number of Hashtags"].mean()
+
+    realRecordsNumberOfMentions = realRecords["number of mentions"].mean()
+    fakeRecordsNumberOfMentions = fakeRecords["number of mentions"].mean()
+    humourRecordsNumberOfMentions = fakeRecords["number of mentions"].mean()
+    
+    realData = [realRecordsNumberOfExclamations,realRecordsNumberOfQuestions,realRecordsNumberOfEllipsis,realRecordsNumberOfEmojis,realRecordsNumberOfURLS,realRecordsNumberOfHashtags,realRecordsNumberOfMentions]
+    fakeData = [fakeRecordsNumberOfExclamations,fakeRecordsNumberOfQuestions,fakeRecordsNumberOfEllipsis,fakeRecordsNumberOfEmojis,fakeRecordsNumberOfURLS,fakeRecordsNumberOfHashtags,fakeRecordsNumberOfMentions]
+    humourData = [humourRecordsNumberOfExclamations,humourRecordsNumberOfQuestions,humourRecordsNumberOfEllipsis,humourRecordsNumberOfEmojis,humourRecordsNumberOfURLS,humourRecordsNumberOfHashtags,humourRecordsNumberOfMentions]
+
+    
+
+
+    #polarityComposition = trainingSet["polarity"].value_counts()
+    #print(polarityComposition)
+    #totalPolarityTypes = trainingSet["polarity"].count()
+
+    #for counter, label in enumerate(polarityTypes):
+    #   print(label, " ", str((polarityComposition[counter] / totalPolarityTypes) * 100), "%")
+
+    width = 0.25
+    x = np.arange(len(labelTypes))
+    #new_x = x * 2
+
+    fig, ax = plt.subplots()
+    rects1 = ax.bar(x - width , realData, width, label='Real')
+    rects2 = ax.bar(x, fakeData, width, label='Fake')
+    rects3 = ax.bar(x + width, humourData, width, label='Humor')
+    
+
+    ax.set_ylabel("Mean Occurences")
+    ax.set_title("Tweet breakdown")
+    ax.set_xticks(x)
+    ax.set_xticklabels(labelTypes)
+    ax.legend()
+
+    #autolabel(rects1)
+    #autolabel(rects2)
+
+    fig.tight_layout()
+    plt.savefig(fname="Data Visualisation/Tweet breakdown of Fake and Real English training set.png")
+
+    plt.show()
+
+
+def showNumberOfWordsUsage(trainingSet):
+    realRecords = trainingSet[trainingSet["label"] == "real"]
+    fakeRecords = trainingSet[trainingSet["label"] == "fake"]
+    humourRecords = trainingSet[trainingSet["label"] == "humor"]
+    # fakeRecords = pd.concat([fakeRecords,humourRecords])
+
+    # print(realRecords.iloc[:,6:9].head(10))
+    # print(fakeRecords.iloc[:,6:9].head(10))
+
+    realRecordsNumberOfWords = realRecords["word length"].mean()
+    fakeRecordsNumberOfWords = fakeRecords["word length"].mean()
+    humourRecordsNumberOfWords = humourRecords["word length"].mean()
+
+    realData = realRecordsNumberOfWords
+    fakeData = fakeRecordsNumberOfWords
+    humourData = humourRecordsNumberOfWords
+
+    plt.figure()
+    labelTypes = ["Real", "Fake", "Humour"]
+    y_pos = np.arange(len(labelTypes))
+    data = [realData,fakeData,humourData]
+
+    plt.bar(y_pos, data, align='center', alpha=0.5)
+    plt.xticks(y_pos, labelTypes)
+    plt.ylabel('Usage')
+    plt.title('Mean word usages in the english training dataset')
+
+    plt.savefig(fname="Data Visualisation/Mean words usage in english training set.png")
+
+    plt.show()
+
+def showNumberOfCharactersUsage(trainingSet):
+    realRecords = trainingSet[trainingSet["label"] == "real"]
+    fakeRecords = trainingSet[trainingSet["label"] == "fake"]
+    humourRecords = trainingSet[trainingSet["label"] == "humor"]
+    # fakeRecords = pd.concat([fakeRecords,humourRecords])
+
+    # print(realRecords.iloc[:,6:9].head(10))
+    # print(fakeRecords.iloc[:,6:9].head(10))
+
+    realRecordsNumberOfWords = realRecords["character length"].mean()
+    fakeRecordsNumberOfWords = fakeRecords["character length"].mean()
+    humourRecordsNumberOfWords = humourRecords["character length"].mean()
+
+    realData = realRecordsNumberOfWords
+    fakeData = fakeRecordsNumberOfWords
+    humourData = humourRecordsNumberOfWords
+
+    plt.figure()
+    labelTypes = ["Real", "Fake", "Humour"]
+    y_pos = np.arange(len(labelTypes))
+    data = [realData,fakeData,humourData]
+
+    plt.bar(y_pos, data, align='center', alpha=0.5)
+    plt.xticks(y_pos, labelTypes)
+    plt.ylabel('Character length')
+    plt.title('Mean character length in the english training dataset')
+
+    plt.savefig(fname="Data Visualisation/Mean character in english training set.png")
+
+    plt.show()
+
+
 def detectTweetTextLanguage(row):
     try:
         lang = detect(row.iloc[1])
@@ -415,7 +569,7 @@ trainingSet["number of Hashtags"] = numberOfHashtags
 trainingSet["number of mentions"] = numberOfMentions
 #trainingSet.to_csv(path_or_buf="D:/Work/Uni work/Comp3222 - MLT/CW/comp3222-mediaeval/testing2.csv",encoding="utf8")
 
-showLanguageComposition(trainingSet) #11142
+#showLanguageComposition(trainingSet) #11142
 #en   76.93157494994131 % english
 #es   9.024373403300421 % spanish
 #tl   2.2440102188773046 % tagalog
@@ -443,14 +597,54 @@ trainingSet.to_csv(path_or_buf="D:/Work/Uni work/Comp3222 - MLT/CW/comp3222-medi
 #showPolarityComposition(englishTrainingSet)
 #showEmojiComposition(englishTrainingSet)
 #showMentionComposition(englishTrainingSet)
-showURLComposition(englishTrainingSet)
-showHashtagsComposition(englishTrainingSet)
+#showURLComposition(englishTrainingSet)
+#showHashtagsComposition(englishTrainingSet)
+#showTweetComposition(englishTrainingSet)
+#showNumberOfWordsUsage(englishTrainingSet)
+#showNumberOfCharactersUsage(englishTrainingSet)
+
+
 
 #englishTrainingSet
 #print(englishTrainingSet["number of emojis"].value_counts())
 #index = englishTrainingSet["number of emojis"] == 16
 #print(englishTrainingSet[index])
-englishTrainingSet.to_csv(path_or_buf="D:/Work/Uni work/Comp3222 - MLT/CW/comp3222-mediaeval/englishTrainingSet.csv",encoding="utf8")
+#englishTrainingSet.to_csv(path_or_buf="D:/Work/Uni work/Comp3222 - MLT/CW/comp3222-mediaeval/englishTrainingSet.csv",encoding="utf8")
+
+print(englishTrainingSet["label"].value_counts())
+realRecords = englishTrainingSet[englishTrainingSet["label"] == "real"]
+fakeRecords = englishTrainingSet[englishTrainingSet["label"] == "fake"]
+humourRecords = englishTrainingSet[englishTrainingSet["label"] == "humor"]
+
+INDICES = 1000
+
+realRecordsData = realRecords.iloc[:INDICES,9:]
+fakeRecordsData = fakeRecords.iloc[:INDICES,9:]
+humourRecordsData = humourRecords.iloc[:INDICES,9:]
+
+realTargets = realRecords.iloc[:INDICES,10]
+fakeTargets = fakeRecords.iloc[:INDICES,10]
+humourTargets = humourRecords.iloc[:INDICES,10]
+
+subTrainingSet = pd.concat([realRecordsData ,fakeRecordsData,humourRecordsData])
+subTargetSet = pd.concat([realTargets,fakeTargets,humourTargets])
+#testing split
+realTestRecordsData = realRecords.iloc[INDICES:,9:]
+fakeTestRecordsData = fakeRecords.iloc[INDICES:,9:]
+humourTestRecordsData = humourRecords.iloc[INDICES:,9:]
+
+realTestTargets = realRecords.iloc[INDICES:,10]
+fakeTestTargets = fakeRecords.iloc[INDICES:,10]
+humourTestTargets = humourRecords.iloc[INDICES:,10]
+
+
+
+subTestTrainingSet = pd.concat([realTestRecordsData ,fakeTestRecordsData,humourTestRecordsData])
+subTestTargetSet = pd.concat([realTestTargets,fakeTestTargets,humourTestTargets])
+print(subTargetSet.shape)
+print(subTargetSet.shape)
+
+
 
 #10956 records with english text according to detectLang
 
@@ -476,7 +670,10 @@ englishTrainingSet.to_csv(path_or_buf="D:/Work/Uni work/Comp3222 - MLT/CW/comp32
 
 
 # making dumb linear regression machine
-# linearRegression = LinearRegression()
-# linearRegression.fit(subTrainingSet,subTrainingSetTarget)
-# linearRegressionPredictions = linearRegression.predict(subTestingSet)
-# print('RMSE = ', np.sqrt(mean_squared_error(subTestingSetTarget, linearRegressionPredictions)))
+svm = svm.SVC()
+svm.fit(subTrainingSet,subTargetSet)
+predictions = svm.predict(subTestTrainingSet)
+for index, row in enumerate(predictions):
+    print(row)
+#linearRegressionPredictions = linearRegression.predict(subTestingSet)
+#print('RMSE = ', np.sqrt(mean_squared_error(subTestingSetTarget, linearRegressionPredictions)))
