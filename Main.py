@@ -23,6 +23,9 @@ from textblob import TextBlob
 import emoji
 from sklearn import svm
 from sklearn.metrics import mean_squared_error
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import TfidfTransformer
+from sklearn.naive_bayes import MultinomialNB
 
 DetectorFactory.seed = 0
 
@@ -265,7 +268,7 @@ def showHashtagsComposition(trainingSet):
 
 def showTweetComposition(trainingSet):
     # polarityTypes = trainingSet["polarity"].value_counts().index # labels
-    labelTypes = ["no. exclamations", "no. questions", "no. ellipsis", "no. emojis", "no. URLS", "no. Hashtags",
+    labelTypes = ["no. exclamations", "no. questions", "no. ellipsis", "no. locations","no. disaster words","no. emojis", "no. URLS", "no. Hashtags",
                   "no. mentions"]
     print(labelTypes)
 
@@ -277,9 +280,9 @@ def showTweetComposition(trainingSet):
     # print(realRecords.iloc[:,6:9].head(10))
     # print(fakeRecords.iloc[:,6:9].head(10))
 
-    realRecordsNumberOfCharacters = realRecords["character length"].mean()
-    fakeRecordsNumberOfCharacters = fakeRecords["character length"].mean()
-    humourRecordsNumberOfCharacters = humourRecords["character length"].mean()
+    #realRecordsNumberOfCharacters = realRecords["character length"].mean()
+    #fakeRecordsNumberOfCharacters = fakeRecords["character length"].mean()
+    #humourRecordsNumberOfCharacters = humourRecords["character length"].mean()
 
     realRecordsNumberOfExclamations = realRecords["number of exclamations"].mean()
     fakeRecordsNumberOfExclamations = fakeRecords["number of exclamations"].mean()
@@ -293,9 +296,17 @@ def showTweetComposition(trainingSet):
     fakeRecordsNumberOfEllipsis = fakeRecords["number of ellipsis"].mean()
     humourRecordsNumberOfEllipsis = fakeRecords["number of ellipsis"].mean()
 
-    realRecordsNumberOfWords = realRecords["word length"].mean()
-    fakeRecordsNumberOfWords = fakeRecords["word length"].mean()
-    humourRecordsNumberOfWords = fakeRecords["word length"].mean()
+    #realRecordsNumberOfWords = realRecords["word length"].mean()
+    #fakeRecordsNumberOfWords = fakeRecords["word length"].mean()
+    #humourRecordsNumberOfWords = fakeRecords["word length"].mean()
+
+    realRecordsNumberOfLocations = realRecords["number of locations"].mean()
+    fakeRecordsNumberOfLocations = fakeRecords["number of locations"].mean()
+    humourRecordsNumberOfLocations = fakeRecords["number of locations"].mean()
+
+    realRecordsNumberOfDisasterWords = realRecords["number of disaster words"].mean()
+    fakeRecordsNumberOfDisasterWords = fakeRecords["number of disaster words"].mean()
+    humourRecordsNumberOfDisasterWords = fakeRecords["number of disaster words"].mean()
 
     realRecordsNumberOfEmojis = realRecords["number of emojis"].mean()
     fakeRecordsNumberOfEmojis = fakeRecords["number of emojis"].mean()
@@ -313,13 +324,13 @@ def showTweetComposition(trainingSet):
     fakeRecordsNumberOfMentions = fakeRecords["number of mentions"].mean()
     humourRecordsNumberOfMentions = fakeRecords["number of mentions"].mean()
 
-    realData = [realRecordsNumberOfExclamations, realRecordsNumberOfQuestions, realRecordsNumberOfEllipsis,
+    realData = [realRecordsNumberOfExclamations, realRecordsNumberOfQuestions, realRecordsNumberOfEllipsis,realRecordsNumberOfLocations,realRecordsNumberOfDisasterWords,
                 realRecordsNumberOfEmojis, realRecordsNumberOfURLS, realRecordsNumberOfHashtags,
                 realRecordsNumberOfMentions]
-    fakeData = [fakeRecordsNumberOfExclamations, fakeRecordsNumberOfQuestions, fakeRecordsNumberOfEllipsis,
+    fakeData = [fakeRecordsNumberOfExclamations, fakeRecordsNumberOfQuestions, fakeRecordsNumberOfEllipsis,fakeRecordsNumberOfLocations,fakeRecordsNumberOfDisasterWords,
                 fakeRecordsNumberOfEmojis, fakeRecordsNumberOfURLS, fakeRecordsNumberOfHashtags,
                 fakeRecordsNumberOfMentions]
-    humourData = [humourRecordsNumberOfExclamations, humourRecordsNumberOfQuestions, humourRecordsNumberOfEllipsis,
+    humourData = [humourRecordsNumberOfExclamations, humourRecordsNumberOfQuestions, humourRecordsNumberOfEllipsis,humourRecordsNumberOfLocations,humourRecordsNumberOfDisasterWords,
                   humourRecordsNumberOfEmojis, humourRecordsNumberOfURLS, humourRecordsNumberOfHashtags,
                   humourRecordsNumberOfMentions]
 
@@ -349,7 +360,7 @@ def showTweetComposition(trainingSet):
     # autolabel(rects2)
 
     fig.tight_layout()
-    plt.savefig(fname="Data Visualisation/Tweet breakdown of Fake and Real English training set.png")
+    plt.savefig(fname="Data Visualisation/Tweet breakdown of English training set.png")
 
     plt.show()
 
@@ -495,11 +506,19 @@ def featureGeneration(trainingSet):
         tweetTokens = word_tokenize(row[1])
         detectTweetTextLanguage(row)
         detectPolarityOfTweet(row)
+        detectSubjectivityOfTweet(row)
         detectTweetFeatures(row)
 
         for w in tweetTokens:
             if w not in stopWords:
                 tokenizedTweets.append(w)
+
+def featureGeneration2(trainingSet):
+    for index, row in trainingSet.iterrows():
+        if row[6] == "real":
+            target.append(1)
+        else:
+            target.append(0)
 
 
 def detectTweetFeatures(row):
@@ -572,6 +591,8 @@ def printFirst7Records():
 createTrainingCsv()  # don't even need this smh
 # #printFirst7Records()
 trainingSet = pd.read_csv("training_set.csv", encoding="utf8", delimiter="x0x")
+createTrainingCsv("mediaeval-2015-testset.txt","testset.csv")
+testSet = pd.read_csv("testset.csv", encoding="utf8", delimiter="x0x")
 
 locationCorpora = pd.read_csv("Cities database/worldcities.csv", encoding="utf8")
 cityCorpora = locationCorpora["city"]
@@ -622,30 +643,53 @@ numberOfHashtags = []
 numberOfMentions = []
 target = []
 
-featureGeneration(trainingSet)
+#featureGeneration(trainingSet)
+featureGeneration(testSet)
 
 corpus = set(tokenizedTweets)
 print(corpus)
 print(len(corpus))
 
 # trainingSet.to_csv(path_or_buf="D:/Work/Uni work/Comp3222 - MLT/CW/comp3222-mediaeval/testing1.csv",encoding="utf8")
-trainingSet["language"] = languageDetected
-trainingSet["polarity"] = polarityTweet
-trainingSet["polarity score"] = polarityScores
-trainingSet["character length"] = numberOfCharacters
-trainingSet["number of exclamations"] = numberOfExclamations
-trainingSet["number of questions"] = numberOfQuestions
-trainingSet["number of ellipsis"] = numberOfEllipsis
-trainingSet["word length"] = numberOfWords
-trainingSet["number of locations"] = numberOfLocations
-trainingSet["number of disaster words"] = numberOfDisasterWords
-trainingSet["number of emojis"] = numberOfEmojis
-trainingSet["number of URLS"] = numberOfUrls
-trainingSet["number of Hashtags"] = numberOfHashtags
-trainingSet["number of mentions"] = numberOfMentions
-trainingSet["target"] = target
-# trainingSet.to_csv(path_or_buf="D:/Work/Uni work/Comp3222 - MLT/CW/comp3222-mediaeval/testing2.csv",encoding="utf8")
+#trainingSet["language"] = languageDetected
+#trainingSet["polarity"] = polarityTweet
+#trainingSet["subjectivity"] = subjectivityTweet
+#trainingSet["polarity score"] = polarityScores
+#trainingSet["subjectivity score"] = subjectivityScores
+#trainingSet["character length"] = numberOfCharacters
+#trainingSet["number of exclamations"] = numberOfExclamations
+#trainingSet["number of questions"] = numberOfQuestions
+#trainingSet["number of ellipsis"] = numberOfEllipsis
+#trainingSet["word length"] = numberOfWords
+#trainingSet["number of locations"] = numberOfLocations
+#trainingSet["number of disaster words"] = numberOfDisasterWords
+#trainingSet["number of emojis"] = numberOfEmojis
+#trainingSet["number of URLS"] = numberOfUrls
+#trainingSet["number of Hashtags"] = numberOfHashtags
+#trainingSet["number of mentions"] = numberOfMentions
+#trainingSet["target"] = target
 
+testSet["language"] = languageDetected
+testSet["polarity"] = polarityTweet
+testSet["subjectivity"] = subjectivityTweet
+testSet["polarity score"] = polarityScores
+testSet["subjectivity score"] = subjectivityScores
+testSet["character length"] = numberOfCharacters
+testSet["number of exclamations"] = numberOfExclamations
+testSet["number of questions"] = numberOfQuestions
+testSet["number of ellipsis"] = numberOfEllipsis
+testSet["word length"] = numberOfWords
+testSet["number of locations"] = numberOfLocations
+testSet["number of disaster words"] = numberOfDisasterWords
+testSet["number of emojis"] = numberOfEmojis
+testSet["number of URLS"] = numberOfUrls
+testSet["number of Hashtags"] = numberOfHashtags
+testSet["number of mentions"] = numberOfMentions
+testSet["target"] = target
+
+#trainingSet.to_csv(path_or_buf="D:/Work/Uni work/Comp3222 - MLT/CW/comp3222-mediaeval/allLanguagesDataset.csv",encoding="utf8")
+testSet.to_csv(path_or_buf="D:/Work/Uni work/Comp3222 - MLT/CW/comp3222-mediaeval/allLanguagesDatasetTEST.csv",encoding="utf8")
+#trainingSet = pd.read_csv("testing2.csv",encoding="utf8")
 # showLanguageComposition(trainingSet) #11142
 # en   76.93157494994131 % english
 # es   9.024373403300421 % spanish
@@ -653,11 +697,15 @@ trainingSet["target"] = target
 # fr   1.5397362424911967 % french
 # id   1.2221224884347166 % indonesian
 
-languageFilter = trainingSet["language"] == "en"
+languageFilter = testSet["language"] == "en"
 
-englishTrainingSet = trainingSet[languageFilter].reset_index(drop=True)
-englishTrainingSet = englishTrainingSet.drop_duplicates(ignore_index=False)  # 11141
-trainingSet.to_csv(path_or_buf="D:/Work/Uni work/Comp3222 - MLT/CW/comp3222-mediaeval/testing2.csv", encoding="utf8")
+#englishTrainingSet = trainingSet[languageFilter].reset_index(drop=True)
+#englishTrainingSet = englishTrainingSet.drop_duplicates(ignore_index=False)  # 11141
+
+englishTestSet = testSet[languageFilter].reset_index(drop=True)
+englishTestSet = englishTestSet.drop_duplicates(ignore_index=False)  # 11141
+
+#trainingSet.to_csv(path_or_buf="D:/Work/Uni work/Comp3222 - MLT/CW/comp3222-mediaeval/testing2.csv", encoding="utf8")
 
 # print("the shape of english records " ,str(englishTrainingSet.shape)) #10956
 # print("The shape of original records " ,str(trainingSet.shape)) #10955
@@ -675,7 +723,7 @@ trainingSet.to_csv(path_or_buf="D:/Work/Uni work/Comp3222 - MLT/CW/comp3222-medi
 # showMentionComposition(englishTrainingSet)
 # showURLComposition(englishTrainingSet)
 # showHashtagsComposition(englishTrainingSet)
-# showTweetComposition(englishTrainingSet)
+# showTweetComposition(trainingSet)
 # showNumberOfWordsUsage(englishTrainingSet)
 # showNumberOfCharactersUsage(englishTrainingSet)
 
@@ -687,35 +735,42 @@ trainingSet.to_csv(path_or_buf="D:/Work/Uni work/Comp3222 - MLT/CW/comp3222-medi
 
 
 #englishTrainingSet.to_csv(path_or_buf="D:/Work/Uni work/Comp3222 - MLT/CW/comp3222-mediaeval/englishTrainingSet.csv",encoding="utf8")
-englishTrainingSet = pd.read_csv(path_or_buf="D:/Work/Uni work/Comp3222 - MLT/CW/comp3222-mediaeval/englishTrainingSet.csv",encoding="utf8")
-print(englishTrainingSet["label"].value_counts())
-realRecords = englishTrainingSet[englishTrainingSet["label"] == "real"]
-fakeRecords = englishTrainingSet[englishTrainingSet["label"] == "fake"]
-humourRecords = englishTrainingSet[englishTrainingSet["label"] == "humor"]
+englishTestSet.to_csv(path_or_buf="D:/Work/Uni work/Comp3222 - MLT/CW/comp3222-mediaeval/englishTrainingSet.csv",encoding="utf8")
+
+
+#englishTrainingSet = pd.read_csv(path_or_buf="D:/Work/Uni work/Comp3222 - MLT/CW/comp3222-mediaeval/englishTrainingSet.csv",encoding="utf8")
+#print(englishTrainingSet["label"].value_counts())
+#realRecords = englishTrainingSet[englishTrainingSet["label"] == "real"]
+#fakeRecords = englishTrainingSet[englishTrainingSet["label"] == "fake"]
+#humourRecords = englishTrainingSet[englishTrainingSet["label"] == "humor"]
+
+realRecords = trainingSet[trainingSet["label"] == "real"]
+fakeRecords = trainingSet[trainingSet["label"] == "fake"]
+humourRecords = trainingSet[trainingSet["label"] == "humor"]
 
 INDICESREAL = 4000
 INDICESFAKE = 3000
 INDICESHUMOUR = 1000
 
-realRecordsData = realRecords.iloc[:INDICESREAL, 10:21]
-fakeRecordsData = fakeRecords.iloc[:INDICESFAKE, 10:21]
-humourRecordsData = humourRecords.iloc[:INDICESHUMOUR, 10:21]
+realRecordsData = realRecords.iloc[:INDICESREAL, 10:23]
+fakeRecordsData = fakeRecords.iloc[:INDICESFAKE, 10:23]
+humourRecordsData = humourRecords.iloc[:INDICESHUMOUR, 10:23]
 
-realTargets = realRecords.iloc[:INDICESREAL, 21]
-fakeTargets = fakeRecords.iloc[:INDICESFAKE, 21]
-humourTargets = humourRecords.iloc[:INDICESHUMOUR, 21]
+realTargets = realRecords.iloc[:INDICESREAL, 23]
+fakeTargets = fakeRecords.iloc[:INDICESFAKE, 23]
+humourTargets = humourRecords.iloc[:INDICESHUMOUR, 23]
 
 subTrainingSet = pd.concat([realRecordsData, fakeRecordsData, humourRecordsData])
 subTargetSet = pd.concat([realTargets, fakeTargets, humourTargets])
 
 # testing split
-realTestRecordsData = realRecords.iloc[INDICESREAL:, 10:21]
-fakeTestRecordsData = fakeRecords.iloc[INDICESFAKE:, 10:21]
-humourTestRecordsData = humourRecords.iloc[INDICESHUMOUR:, 10:21]
+realTestRecordsData = realRecords.iloc[INDICESREAL:, 10:23]
+fakeTestRecordsData = fakeRecords.iloc[INDICESFAKE:, 10:23]
+humourTestRecordsData = humourRecords.iloc[INDICESHUMOUR:, 10:23]
 
-realTestTargets = realRecords.iloc[INDICESREAL:, 21]
-fakeTestTargets = fakeRecords.iloc[INDICESFAKE:, 21]
-humourTestTargets = humourRecords.iloc[INDICESHUMOUR:, 21]
+realTestTargets = realRecords.iloc[INDICESREAL:, 23]
+fakeTestTargets = fakeRecords.iloc[INDICESFAKE:, 23]
+humourTestTargets = humourRecords.iloc[INDICESHUMOUR:, 23]
 
 subTestTrainingSet = pd.concat([realTestRecordsData, fakeTestRecordsData, humourTestRecordsData])
 subTestTargetSet = pd.concat([realTestTargets, fakeTestTargets, humourTestTargets])

@@ -24,39 +24,51 @@ import emoji
 from sklearn import svm
 from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import GridSearchCV
+
+
 DetectorFactory.seed = 0
 
-
-
 englishTrainingSet = pd.read_csv("D:/Work/Uni work/Comp3222 - MLT/CW/comp3222-mediaeval/englishTrainingSet.csv",encoding="utf8")
-print(englishTrainingSet["label"].value_counts())
-realRecords = englishTrainingSet[englishTrainingSet["label"] == "real"]
-fakeRecords = englishTrainingSet[englishTrainingSet["label"] == "fake"]
-humourRecords = englishTrainingSet[englishTrainingSet["label"] == "humor"]
+trainingSet = pd.read_csv("allLanguagesDataset.csv",encoding="utf8")
 
-INDICESREAL = 4000
-INDICESFAKE = 3000
-INDICESHUMOUR = 1000
 
-realRecordsData = realRecords.iloc[:INDICESREAL, 10:21]
-fakeRecordsData = fakeRecords.iloc[:INDICESFAKE, 10:21]
-humourRecordsData = humourRecords.iloc[:INDICESHUMOUR, 10:21]
 
-realTargets = realRecords.iloc[:INDICESREAL, 21]
-fakeTargets = fakeRecords.iloc[:INDICESFAKE, 21]
-humourTargets = humourRecords.iloc[:INDICESHUMOUR, 21]
+#print(englishTrainingSet["label"].value_counts())
+#realRecords = englishTrainingSet[englishTrainingSet["label"] == "real"]
+#fakeRecords = englishTrainingSet[englishTrainingSet["label"] == "fake"]
+#humourRecords = englishTrainingSet[englishTrainingSet["label"] == "humor"]
+
+print(trainingSet["label"].value_counts())
+realRecords = trainingSet[trainingSet["label"] == "real"]
+fakeRecords = trainingSet[trainingSet["label"] == "fake"]
+humourRecords = trainingSet[trainingSet["label"] == "humor"]
+
+INDICESREAL = 5000
+INDICESFAKE = 3500
+INDICESHUMOUR = 1500
+TARGETINDEX = 24
+
+print(englishTrainingSet.iloc[0,0])
+
+realRecordsData = realRecords.iloc[:INDICESREAL, 11:TARGETINDEX]
+fakeRecordsData = fakeRecords.iloc[:INDICESFAKE, 11:TARGETINDEX]
+humourRecordsData = humourRecords.iloc[:INDICESHUMOUR, 11:TARGETINDEX]
+
+realTargets = realRecords.iloc[:INDICESREAL, TARGETINDEX]
+fakeTargets = fakeRecords.iloc[:INDICESFAKE, TARGETINDEX]
+humourTargets = humourRecords.iloc[:INDICESHUMOUR, TARGETINDEX]
 
 subTrainingSet = pd.concat([realRecordsData, fakeRecordsData, humourRecordsData])
 subTargetSet = pd.concat([realTargets, fakeTargets, humourTargets])
 
 # testing split
-realTestRecordsData = realRecords.iloc[INDICESREAL:, 10:21]
-fakeTestRecordsData = fakeRecords.iloc[INDICESFAKE:, 10:21]
-humourTestRecordsData = humourRecords.iloc[INDICESHUMOUR:, 10:21]
+realTestRecordsData = realRecords.iloc[INDICESREAL:, 11:TARGETINDEX]
+fakeTestRecordsData = fakeRecords.iloc[INDICESFAKE:, 11:TARGETINDEX]
+humourTestRecordsData = humourRecords.iloc[INDICESHUMOUR:, 11:TARGETINDEX]
 
-realTestTargets = realRecords.iloc[INDICESREAL:, 21]
-fakeTestTargets = fakeRecords.iloc[INDICESFAKE:, 21]
-humourTestTargets = humourRecords.iloc[INDICESHUMOUR:, 21]
+realTestTargets = realRecords.iloc[INDICESREAL:, TARGETINDEX]
+fakeTestTargets = fakeRecords.iloc[INDICESFAKE:, TARGETINDEX]
+humourTestTargets = humourRecords.iloc[INDICESHUMOUR:, TARGETINDEX]
 
 subTestTrainingSet = pd.concat([realTestRecordsData, fakeTestRecordsData, humourTestRecordsData])
 subTestTargetSet = pd.concat([realTestTargets, fakeTestTargets, humourTestTargets])
@@ -65,44 +77,34 @@ print(subTargetSet.shape)
 
 # 10956 records with english text according to detectLang
 
-# showLabelComposition(englishTrainingSet)
-# Fake   47.09424322598303 % aka ~ 62.68%
-# Real   37.32323693093696 %
-# Humor   15.58251984308001 %
+#actual test
+testSet = pd.read_csv("allLanguagesDatasetTEST.csv",encoding="utf8")
+testSetData = testSet.iloc[:,11:TARGETINDEX]
+testSetTarget = testSet.iloc[:,TARGETINDEX]
 
-# 263004702072004608	one of these are dupes.
-# 263030750415319040
-
-# showLabelComposition()
-
-
-# dumb training and testing dataset
-# subTrainingSet = trainingSet.iloc[:99,:6]
-# subTestingSet = trainingSet.iloc[100:199,:6]
-# print(subTrainingSet)
-# print(subTestingSet)
-
-# subTrainingSetTarget = trainingSet.iloc[:99,6]
-# subTestingSetTarget = trainingSet.iloc[100:199,6]
-
-
-# making svc -> support vector classifier
 parameters = {'kernel':('linear', 'rbf'), 'C':[1, 10]}
 svm = svm.SVC()
-classifier = GridSearchCV(svm, parameters)
+#classifier = GridSearchCV(svm, parameters)
+#classifier.fit(subTrainingSet, subTargetSet)
+#predictions = classifier.predict(subTestTrainingSet)
+svm.fit(subTrainingSet,subTargetSet)
+#predictions = svm.predict(subTestTrainingSet)
+predictions = svm.predict(testSetData)
 
-classifier.fit(subTrainingSet, subTargetSet)
-predictions = classifier.predict(subTestTrainingSet)
 correct = 0
 incorrect = 0
 for index, row in enumerate(predictions):
-    if (row == subTestTargetSet.iloc[index]):
+    print(row)
+    #if (row == subTestTargetSet.iloc[index]):
+    if (row == testSetTarget.iloc[index]):
         correct += 1
     else:
         incorrect += 1
 
 accuracy = (correct / (correct + incorrect)) * 100
 print("accuracy = ", accuracy)
-print('RMSE = ', np.sqrt(mean_squared_error(subTestTargetSet, predictions)))
-print(classifier.cv_results_)
+#print('RMSE = ', np.sqrt(mean_squared_error(subTestTargetSet, predictions)))
+print('RMSE = ', np.sqrt(mean_squared_error(testSetTarget, predictions)))
+#print(classifier.cv_results_)
+
 
