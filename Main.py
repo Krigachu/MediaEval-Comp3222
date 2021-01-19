@@ -25,6 +25,7 @@ from sklearn import svm
 from sklearn.metrics import mean_squared_error
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
+from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
 
 DetectorFactory.seed = 0
@@ -91,13 +92,13 @@ def showPolarityComposition(trainingSet):
     realRecords = trainingSet[trainingSet["label"] == "real"]
     fakeRecords = trainingSet[trainingSet["label"] == "fake"]
     humourRecords = trainingSet[trainingSet["label"] == "humor"]
-    fakeRecords = pd.concat([fakeRecords, humourRecords])
 
     # print(realRecords.iloc[:,6:9].head(10))
     # print(fakeRecords.iloc[:,6:9].head(10))
 
     realRecordsPolarities = realRecords["polarity"].value_counts()
     fakeRecordsPolarities = fakeRecords["polarity"].value_counts()
+    humourRecordsPolarites = humourRecords["polarity"].value_counts()
     print(realRecordsPolarities)
     print(fakeRecordsPolarities)
 
@@ -108,14 +109,17 @@ def showPolarityComposition(trainingSet):
     # for counter, label in enumerate(polarityTypes):
     #   print(label, " ", str((polarityComposition[counter] / totalPolarityTypes) * 100), "%")
 
-    width = 0.35
+    width = 0.25
     x = np.arange(len(polarityTypes))
-    fig, ax = plt.subplots()
-    rects1 = ax.bar(x - width / 2, realRecordsPolarities, width, label='Real')
-    rects2 = ax.bar(x + width / 2, fakeRecordsPolarities, width, label='Fake')
+    # new_x = x * 2
 
-    ax.set_ylabel("Occurences")
-    ax.set_title("Breakdown of polarities in fake and real posts")
+    fig, ax = plt.subplots()
+    rects1 = ax.bar(x - width, realRecordsPolarities, width, label='Real')
+    rects2 = ax.bar(x, fakeRecordsPolarities, width, label='Fake')
+    rects3 = ax.bar(x + width, humourRecordsPolarites, width, label='Humor')
+
+    ax.set_ylabel("Occurence")
+    ax.set_title("Polarity breakdown of dataset")
     ax.set_xticks(x)
     ax.set_xticklabels(polarityTypes)
     ax.legend()
@@ -124,7 +128,47 @@ def showPolarityComposition(trainingSet):
     # autolabel(rects2)
 
     fig.tight_layout()
-    plt.savefig(fname="Data Visualisation/Polarity composition of Fake and Real English training set.png")
+    plt.savefig(fname="Data Visualisation/Polarity breakdown.png")
+
+    plt.show()
+
+
+def showSubjectivityComposition(trainingSet):
+    polarityTypes = trainingSet["subjectivity"].value_counts().index  # labels
+
+    realRecords = trainingSet[trainingSet["label"] == "real"]
+    fakeRecords = trainingSet[trainingSet["label"] == "fake"]
+    humourRecords = trainingSet[trainingSet["label"] == "humor"]
+
+    # print(realRecords.iloc[:,6:9].head(10))
+    # print(fakeRecords.iloc[:,6:9].head(10))
+
+    realRecordsPolarities = realRecords["subjectivity"].value_counts()
+    fakeRecordsPolarities = fakeRecords["subjectivity"].value_counts()
+    humourRecordsPolarites = humourRecords["subjectivity"].value_counts()
+    print(realRecordsPolarities)
+    print(fakeRecordsPolarities)
+
+    width = 0.25
+    x = np.arange(len(polarityTypes))
+    # new_x = x * 2
+
+    fig, ax = plt.subplots()
+    rects1 = ax.bar(x - width, realRecordsPolarities, width, label='Real')
+    rects2 = ax.bar(x, fakeRecordsPolarities, width, label='Fake')
+    rects3 = ax.bar(x + width, humourRecordsPolarites, width, label='Humor')
+
+    ax.set_ylabel("Occurence")
+    ax.set_title("Subjectivity breakdown of dataset")
+    ax.set_xticks(x)
+    ax.set_xticklabels(polarityTypes)
+    ax.legend()
+
+    # autolabel(rects1)
+    # autolabel(rects2)
+
+    fig.tight_layout()
+    plt.savefig(fname="Data Visualisation/Subjectivity breakdown.png")
 
     plt.show()
 
@@ -365,6 +409,84 @@ def showTweetComposition(trainingSet):
     plt.show()
 
 
+def showPOSTagsComposition(trainingSet):
+    # polarityTypes = trainingSet["polarity"].value_counts().index # labels
+    labelTypes = ["verb count","noun count","adjective count","adverb count","pronoun count"]
+    print(labelTypes)
+
+    realRecords = trainingSet[trainingSet["label"] == "real"]
+    fakeRecords = trainingSet[trainingSet["label"] == "fake"]
+    humourRecords = trainingSet[trainingSet["label"] == "humor"]
+    # fakeRecords = pd.concat([fakeRecords,humourRecords])
+
+    # print(realRecords.iloc[:,6:9].head(10))
+    # print(fakeRecords.iloc[:,6:9].head(10))
+
+    #realRecordsNumberOfCharacters = realRecords["character length"].mean()
+    #fakeRecordsNumberOfCharacters = fakeRecords["character length"].mean()
+    #humourRecordsNumberOfCharacters = humourRecords["character length"].mean()
+
+    realRecordsVerbCount = realRecords["verb count"].mean()
+    fakeRecordsVerbCount = fakeRecords["verb count"].mean()
+    humourRecordsVerbCount = fakeRecords["verb count"].mean()
+
+    realRecordsNounCount = realRecords["noun count"].mean()
+    fakeRecordsNounCount = fakeRecords["noun count"].mean()
+    humourRecordsNounCount = fakeRecords["noun count"].mean()
+
+    realRecordsAdjectiveCount = realRecords["adjective count"].mean()
+    fakeRecordsAdjectiveCount = fakeRecords["adjective count"].mean()
+    humourRecordsAdjectiveCount = fakeRecords["adjective count"].mean()
+
+    #realRecordsNumberOfWords = realRecords["word length"].mean()
+    #fakeRecordsNumberOfWords = fakeRecords["word length"].mean()
+    #humourRecordsNumberOfWords = fakeRecords["word length"].mean()
+
+    realRecordsAdverbCount = realRecords["adverb count"].mean()
+    fakeRecordsAdverbCount = fakeRecords["adverb count"].mean()
+    humourRecordsAdverbCount = fakeRecords["adverb count"].mean()
+
+    realRecordsPronounCount = realRecords["pronoun count"].mean()
+    fakeRecordsPronounCount = fakeRecords["pronoun count"].mean()
+    humourRecordsPronounCount = fakeRecords["pronoun count"].mean()
+
+
+    realData = [realRecordsVerbCount,realRecordsNounCount,realRecordsAdjectiveCount,realRecordsAdverbCount,realRecordsPronounCount]
+    fakeData = [fakeRecordsVerbCount,fakeRecordsNounCount,fakeRecordsAdjectiveCount,fakeRecordsAdverbCount,fakeRecordsPronounCount]
+    humourData = [humourRecordsVerbCount,humourRecordsNounCount,humourRecordsAdjectiveCount,humourRecordsAdverbCount,humourRecordsPronounCount]
+
+
+    # polarityComposition = trainingSet["polarity"].value_counts()
+    # print(polarityComposition)
+    # totalPolarityTypes = trainingSet["polarity"].count()
+
+    # for counter, label in enumerate(polarityTypes):
+    #   print(label, " ", str((polarityComposition[counter] / totalPolarityTypes) * 100), "%")
+
+    width = 0.25
+    x = np.arange(len(labelTypes))
+    # new_x = x * 2
+
+    fig, ax = plt.subplots()
+    rects1 = ax.bar(x - width, realData, width, label='Real')
+    rects2 = ax.bar(x, fakeData, width, label='Fake')
+    rects3 = ax.bar(x + width, humourData, width, label='Humor')
+
+    ax.set_ylabel("Mean Occurences")
+    ax.set_title("Mean occurences of POS tags in tweet content")
+    ax.set_xticks(x)
+    ax.set_xticklabels(labelTypes)
+    ax.legend()
+
+    # autolabel(rects1)
+    # autolabel(rects2)
+
+    fig.tight_layout()
+    plt.savefig(fname="Data Visualisation/POS tag breakdown.png")
+
+    plt.show()
+
+
 def showNumberOfWordsUsage(trainingSet):
     realRecords = trainingSet[trainingSet["label"] == "real"]
     fakeRecords = trainingSet[trainingSet["label"] == "fake"]
@@ -374,9 +496,9 @@ def showNumberOfWordsUsage(trainingSet):
     # print(realRecords.iloc[:,6:9].head(10))
     # print(fakeRecords.iloc[:,6:9].head(10))
 
-    realRecordsNumberOfWords = realRecords["word length"].mean()
-    fakeRecordsNumberOfWords = fakeRecords["word length"].mean()
-    humourRecordsNumberOfWords = humourRecords["word length"].mean()
+    realRecordsNumberOfWords = realRecords["word count"].mean()
+    fakeRecordsNumberOfWords = fakeRecords["word count"].mean()
+    humourRecordsNumberOfWords = humourRecords["word count"].mean()
 
     realData = realRecordsNumberOfWords
     fakeData = fakeRecordsNumberOfWords
@@ -389,10 +511,10 @@ def showNumberOfWordsUsage(trainingSet):
 
     plt.bar(y_pos, data, align='center', alpha=0.5)
     plt.xticks(y_pos, labelTypes)
-    plt.ylabel('Usage')
-    plt.title('Mean word usages in the english training dataset')
+    plt.ylabel('Mean word count')
+    plt.title('Mean word count in the training dataset')
 
-    plt.savefig(fname="Data Visualisation/Mean words usage in english training set.png")
+    plt.savefig(fname="Data Visualisation/Mean words in training set.png")
 
     plt.show()
 
@@ -406,9 +528,9 @@ def showNumberOfCharactersUsage(trainingSet):
     # print(realRecords.iloc[:,6:9].head(10))
     # print(fakeRecords.iloc[:,6:9].head(10))
 
-    realRecordsNumberOfWords = realRecords["character length"].mean()
-    fakeRecordsNumberOfWords = fakeRecords["character length"].mean()
-    humourRecordsNumberOfWords = humourRecords["character length"].mean()
+    realRecordsNumberOfWords = realRecords["character count"].mean()
+    fakeRecordsNumberOfWords = fakeRecords["character count"].mean()
+    humourRecordsNumberOfWords = humourRecords["character count"].mean()
 
     realData = realRecordsNumberOfWords
     fakeData = fakeRecordsNumberOfWords
@@ -421,10 +543,10 @@ def showNumberOfCharactersUsage(trainingSet):
 
     plt.bar(y_pos, data, align='center', alpha=0.5)
     plt.xticks(y_pos, labelTypes)
-    plt.ylabel('Character length')
-    plt.title('Mean character length in the english training dataset')
+    plt.ylabel('Mean character count')
+    plt.title('Mean character count in the training dataset')
 
-    plt.savefig(fname="Data Visualisation/Mean character in english training set.png")
+    plt.savefig(fname="Data Visualisation/Mean character count training set.png")
 
     plt.show()
 
@@ -468,11 +590,11 @@ def detectSubjectivityOfTweet(row):
         subjectivityOfBlob = blob.subjectivity
         subjectivityScores.append(subjectivityOfBlob)
 
-        if (subjectivityOfBlob == 0):
+        if (subjectivityOfBlob == 0.5):
             subjectivityOfBlob = "neutral"
-        elif (subjectivityOfBlob > 0):
+        elif (subjectivityOfBlob < 0.5):
             subjectivityOfBlob = "objective"
-        elif (subjectivityOfBlob < 0):
+        elif (subjectivityOfBlob > 0.5):
             subjectivityOfBlob = "subjective"
         else:
             subjectivityOfBlob = "error"
@@ -509,9 +631,31 @@ def featureGeneration(trainingSet):
         detectSubjectivityOfTweet(row)
         detectTweetFeatures(row)
 
-        for w in tweetTokens:
-            if w not in stopWords:
-                tokenizedTweets.append(w)
+    trainingSet["language"] = languageDetected
+    trainingSet["polarity"] = polarityTweet
+    trainingSet["subjectivity"] = subjectivityTweet
+    trainingSet["polarity score"] = polarityScores
+    trainingSet["subjectivity score"] = subjectivityScores
+    trainingSet["character count"] = trainingSet.iloc[:, 1].apply(lambda x: len(x))  # taken
+    trainingSet['punctuation count'] = trainingSet.iloc[:, 1].apply(lambda x: len("".join(_ for _ in x if _ in punctuation)))  # taken
+    trainingSet["number of exclamations"] = trainingSet.iloc[:, 1].apply(lambda x: extractExclamations(x))
+    trainingSet["number of questions"] = trainingSet.iloc[:, 1].apply(lambda x: extractQuestions(x))
+    trainingSet["number of ellipsis"] = trainingSet.iloc[:, 1].apply(lambda x: extractEllipsis(x))
+    trainingSet["word count"] = trainingSet.iloc[:, 1].apply(lambda x: len(x.split()))  # taken
+    trainingSet['noun count'] = trainingSet.iloc[:, 1].apply(lambda x: checkPosTag(x, 'noun'))
+    trainingSet['verb count'] = trainingSet.iloc[:, 1].apply(lambda x: checkPosTag(x, 'verb'))
+    trainingSet['adjective count'] = trainingSet.iloc[:, 1].apply(lambda x: checkPosTag(x, 'adjective'))
+    trainingSet['adverb count'] = trainingSet.iloc[:, 1].apply(lambda x: checkPosTag(x, 'adverb'))
+    trainingSet['pronoun count'] = trainingSet.iloc[:, 1].apply(lambda x: checkPosTag(x, 'pronoun'))
+    trainingSet["number of locations"] = numberOfLocations
+    trainingSet["number of disaster words"] = numberOfDisasterWords
+    trainingSet["number of emojis"] = trainingSet.iloc[:, 1].apply(lambda x: extractEmojis(x))
+    trainingSet["number of URLS"] = trainingSet.iloc[:, 1].apply(lambda x: extractUrlCount(x))
+    trainingSet["number of Hashtags"] = trainingSet.iloc[:, 1].apply(lambda x: extractHashtags(x))
+    trainingSet["number of mentions"] = trainingSet.iloc[:, 1].apply(lambda x: extractMentions(x))
+    trainingSet['word density'] = trainingSet['character count'] / (trainingSet['word count'] + 1)  # taken
+    trainingSet["target"] = target
+
 
 def featureGeneration2(trainingSet):
     for index, row in trainingSet.iterrows():
@@ -523,58 +667,81 @@ def featureGeneration2(trainingSet):
 
 def detectTweetFeatures(row):
     tweet = row[1]
-    # blob = TextBlob(tweet)
+
     locations = 0
     disasterWords = 0
-    numberOfCharacters.append(len(tweet))
     tweetTokens = word_tokenize(tweet)
-    currentTokens = []
-    URLs = re.findall(twitterLinkRegex, tweet)
-    hashtags = re.findall(hashtagRegex, tweet)
-    mentions = re.findall(mentionRegex, tweet)
-    exclamations = re.findall(exclamationRegex, tweet)
-    questions = re.findall(questionRegex, tweet)
-    ellipsisR = re.findall(ellipsisRegex, tweet)
-
 
     if row[6] == "real":
-        target.append(1)
-    else:
         target.append(0)
-
-    emojis = emoji.demojize(tweet)
-    emojis = re.findall(emojiRegex, emojis)
-    emojisTweet = [emoji.emojize(x) for x in emojis]
+    else:
+        target.append(1)
 
     for w in tweetTokens:
         if w not in stopWordsPunctuation:
-            currentTokens.append(w)
             tokenizedTweets.append(w)
             if ((cityCorpora == w) | (countryCorpora == w) | (iso3Corpora == w.upper())).any():
                 locations =+ 1
             if (naturalDisasterWordsCopora == w).any():
                 disasterWords =+ 1
 
-    # grams = bigrams(currentTokens)
-    # print(list(grams))
-    # print(nltk.pos_tag(grams))
-    # print(nltk.ne_chunk(nltk.pos_tag(grams)))
-    # POSTaggedTokens = nltk.pos_tag(currentTokens)
-    # namedEntities = nltk.ne_chunk(POSTaggedTokens)
-    # print(row[0],namedEntities)
-    # print(currentTokens)
-
-    numberOfWords.append(len(currentTokens))
-    numberOfUrls.append(len(URLs))
-    numberOfHashtags.append(len(hashtags))
-    numberOfMentions.append(len(mentions))
-    numberOfExclamations.append(len(exclamations))
-    numberOfQuestions.append(len(questions))
-    numberOfEllipsis.append(len(ellipsisR))
-    numberOfEmojis.append(len(emojisTweet))
     numberOfLocations.append(locations)
     numberOfDisasterWords.append(disasterWords)
 
+
+def extractEmojis(tweet):
+    emojis = emoji.demojize(tweet)
+    emojis = re.findall(emojiRegex, emojis)
+    #emojisTweet = [emoji.emojize(x) for x in emojis]
+    #cnt = len(emojisTweet)
+    cnt = len(emojis)
+    return cnt
+
+
+def extractEllipsis(tweet):
+    ellipsisR = re.findall(ellipsisRegex, tweet)
+    cnt = (len(ellipsisR))
+    return cnt
+
+
+def extractQuestions(tweet):
+    questions = re.findall(questionRegex, tweet)
+    cnt = (len(questions))
+    return cnt
+
+
+def extractExclamations(tweet):
+    exclamations = re.findall(exclamationRegex, tweet)
+    cnt = (len(exclamations))
+    return cnt
+
+def extractMentions(tweet):
+    mentions = re.findall(mentionRegex, tweet)
+    cnt = (len(mentions))
+    return cnt
+
+def extractHashtags(tweet):
+    hashtags = re.findall(hashtagRegex, tweet)
+    cnt = (len(hashtags))
+    return cnt
+
+def extractUrlCount(tweet):
+    URLs = re.findall(twitterLinkRegex, tweet)
+    cnt = (len(URLs))
+    return cnt
+
+
+def checkPosTag(tweetTokens, tag):
+    cnt = 0
+    try:
+        POSTaggedTokens = nltk.pos_tag(tweetTokens)
+        for tuple in POSTaggedTokens:
+            POStag = tuple[1]
+            if POStag in pos_tags[tag]:
+                cnt += 1
+    except:
+        pass
+    return cnt
 
 def printFirst7Records():
     with codecs.open("training_set.csv", "r", encoding="utf8") as txtFileToCsv:
@@ -588,11 +755,20 @@ def printFirst7Records():
             c += 1
 
 
-createTrainingCsv()  # don't even need this smh
-# #printFirst7Records()
+createTrainingCsv()
 trainingSet = pd.read_csv("training_set.csv", encoding="utf8", delimiter="x0x")
-createTrainingCsv("mediaeval-2015-testset.txt","testset.csv")
-testSet = pd.read_csv("testset.csv", encoding="utf8", delimiter="x0x")
+#trainingSet = pd.read_csv("testset.csv", encoding="utf8", delimiter="x0x")
+
+#createTrainingCsv("mediaeval-2015-testset.txt","testset.csv")
+#testSet = pd.read_csv("testset.csv", encoding="utf8", delimiter="x0x")
+
+pos_tags = {
+    "noun" :  ["NN","NNS","NNP","NNPS"],
+    "pronoun" : ["PRP","PRP$","WP","WP$"],
+    "verb" : ["VB","VBD","VBG","VBN","VBP","VBZ"],
+    "adjective" : ["JJ","JJR","JJS"],
+    "adverb" : ["RB","RBR","RBS","WRB"]
+}
 
 locationCorpora = pd.read_csv("Cities database/worldcities.csv", encoding="utf8")
 cityCorpora = locationCorpora["city"]
@@ -618,10 +794,13 @@ exclamationRegex = "!"
 questionRegex = "\?"
 ellipsisRegex = "\.{3}"
 emojiRegex = r"(:[^:]*:)"
+
 # think about emoticon regex
 # need to extract named entities
 # locations
 # respected news agents
+
+MAXFEATURES = 1000;
 
 
 tokenizedTweets = []
@@ -630,65 +809,83 @@ polarityTweet = []
 subjectivityTweet = []
 polarityScores = []
 subjectivityScores = []
-numberOfCharacters = []
-numberOfExclamations = []
-numberOfQuestions = []
-numberOfEllipsis = []
-numberOfWords = []
 numberOfLocations = []
 numberOfDisasterWords = []
-numberOfEmojis = []
-numberOfUrls = []
-numberOfHashtags = []
-numberOfMentions = []
 target = []
 
 #featureGeneration(trainingSet)
-featureGeneration(testSet)
+#featureGeneration(testSet)
 
-corpus = set(tokenizedTweets)
-print(corpus)
-print(len(corpus))
+#corpus = trainingSet.iloc[:,1]
+#corpusCSV = pd.Series(corpus)
+#corpusCSV.to_csv("corpusCSV.csv",encoding="utf8")
+
+#corpus = pd.read_csv("corpusCSV.csv",encoding="utf8")
+#vectorizer = CountVectorizer(stop_words="english")
+#X = vectorizer.fit_transform(corpus) # 27468 words
+#print(vectorizer.get_feature_names()) #token_pattern=r'\b\w+\b' -> whitespace word whitespace
+
+#bigramVectorizer = CountVectorizer(ngram_range=(1, 2), token_pattern=r'\b\w+\b', min_df=1, stop_words="english" ,max_features=MAXFEATURES)
+#X = bigramVectorizer.fit_transform(corpus) # 85822 words
+#print(bigramVectorizer.get_feature_names())
+
+#print(corpus)
+#print(X.toarray())
+#print(len(X.toarray()[0]))
+
+#print(X.shape)
+#print(len(corpus))
+
+#transformer = TfidfTransformer()
+#tfidf = transformer.fit_transform(X)
+#print(tfidf.shape)
+#print(tfidf.toarray())
+
+#print(transformer.idf_)
+
+#tfidfVectorizer = TfidfVectorizer(ngram_range=(1, 2), token_pattern=r'\b\w+\b', min_df=1, stop_words="english" ,max_features=MAXFEATURES,)
+#Y = tfidfVectorizer.fit_transform(corpus)
+#print(Y.shape)
+#print(Y.toarray())
+
+#print(tfidfVectorizer.idf_)
+#print("n_samples: %d, n_features: %d" % Y.shape)
+
+#trainingSet["Vectors"] = Y.toarray()
+
 
 # trainingSet.to_csv(path_or_buf="D:/Work/Uni work/Comp3222 - MLT/CW/comp3222-mediaeval/testing1.csv",encoding="utf8")
-#trainingSet["language"] = languageDetected
-#trainingSet["polarity"] = polarityTweet
-#trainingSet["subjectivity"] = subjectivityTweet
-#trainingSet["polarity score"] = polarityScores
-#trainingSet["subjectivity score"] = subjectivityScores
-#trainingSet["character length"] = numberOfCharacters
-#trainingSet["number of exclamations"] = numberOfExclamations
-#trainingSet["number of questions"] = numberOfQuestions
-#trainingSet["number of ellipsis"] = numberOfEllipsis
-#trainingSet["word length"] = numberOfWords
-#trainingSet["number of locations"] = numberOfLocations
-#trainingSet["number of disaster words"] = numberOfDisasterWords
-#trainingSet["number of emojis"] = numberOfEmojis
-#trainingSet["number of URLS"] = numberOfUrls
-#trainingSet["number of Hashtags"] = numberOfHashtags
-#trainingSet["number of mentions"] = numberOfMentions
-#trainingSet["target"] = target
 
-testSet["language"] = languageDetected
-testSet["polarity"] = polarityTweet
-testSet["subjectivity"] = subjectivityTweet
-testSet["polarity score"] = polarityScores
-testSet["subjectivity score"] = subjectivityScores
-testSet["character length"] = numberOfCharacters
-testSet["number of exclamations"] = numberOfExclamations
-testSet["number of questions"] = numberOfQuestions
-testSet["number of ellipsis"] = numberOfEllipsis
-testSet["word length"] = numberOfWords
-testSet["number of locations"] = numberOfLocations
-testSet["number of disaster words"] = numberOfDisasterWords
-testSet["number of emojis"] = numberOfEmojis
-testSet["number of URLS"] = numberOfUrls
-testSet["number of Hashtags"] = numberOfHashtags
-testSet["number of mentions"] = numberOfMentions
-testSet["target"] = target
 
-#trainingSet.to_csv(path_or_buf="D:/Work/Uni work/Comp3222 - MLT/CW/comp3222-mediaeval/allLanguagesDataset.csv",encoding="utf8")
-testSet.to_csv(path_or_buf="D:/Work/Uni work/Comp3222 - MLT/CW/comp3222-mediaeval/allLanguagesDatasetTEST.csv",encoding="utf8")
+#trainingSet.to_csv("trainingSetAllFeatures.csv",encoding="utf8")
+trainingSet = pd.read_csv("trainingSetAllFeatures.csv",encoding="utf8")
+
+#showLabelComposition(trainingSet)
+showPOSTagsComposition(trainingSet)
+showPolarityComposition(trainingSet)
+showSubjectivityComposition(trainingSet)
+#showNumberOfCharactersUsage(trainingSet)
+#showNumberOfWordsUsage(trainingSet)
+#testSet["language"] = languageDetected
+#testSet["polarity"] = polarityTweet
+#testSet["subjectivity"] = subjectivityTweet
+#testSet["polarity score"] = polarityScores
+#testSet["subjectivity score"] = subjectivityScores
+#testSet["character length"] = numberOfCharacters
+#testSet["number of exclamations"] = numberOfExclamations
+#testSet["number of questions"] = numberOfQuestions
+#testSet["number of ellipsis"] = numberOfEllipsis
+#testSet["word length"] = numberOfWords
+#testSet["number of locations"] = numberOfLocations
+#testSet["number of disaster words"] = numberOfDisasterWords
+#testSet["number of emojis"] = numberOfEmojis
+#testSet["number of URLS"] = numberOfUrls
+#testSet["number of Hashtags"] = numberOfHashtags
+#testSet["number of mentions"] = numberOfMentions
+#testSet["target"] = target
+
+#trainingSet.to_csv(path_or_buf="D:/Work/Uni work/Comp3222 - MLT/CW/comp3222-mediaeval/tfidfAttempt.csv",encoding="utf8")
+#testSet.to_csv(path_or_buf="D:/Work/Uni work/Comp3222 - MLT/CW/comp3222-mediaeval/allLanguagesDatasetTEST.csv",encoding="utf8")
 #trainingSet = pd.read_csv("testing2.csv",encoding="utf8")
 # showLanguageComposition(trainingSet) #11142
 # en   76.93157494994131 % english
@@ -697,13 +894,14 @@ testSet.to_csv(path_or_buf="D:/Work/Uni work/Comp3222 - MLT/CW/comp3222-mediaeva
 # fr   1.5397362424911967 % french
 # id   1.2221224884347166 % indonesian
 
-languageFilter = testSet["language"] == "en"
+#languageFilter = trainingSet["language"] == "en"
+#languageFilter = testSet["language"] == "en"
 
 #englishTrainingSet = trainingSet[languageFilter].reset_index(drop=True)
 #englishTrainingSet = englishTrainingSet.drop_duplicates(ignore_index=False)  # 11141
 
-englishTestSet = testSet[languageFilter].reset_index(drop=True)
-englishTestSet = englishTestSet.drop_duplicates(ignore_index=False)  # 11141
+#englishTestSet = testSet[languageFilter].reset_index(drop=True)
+#englishTestSet = englishTestSet.drop_duplicates(ignore_index=False)  # 11141
 
 #trainingSet.to_csv(path_or_buf="D:/Work/Uni work/Comp3222 - MLT/CW/comp3222-mediaeval/testing2.csv", encoding="utf8")
 
@@ -734,8 +932,8 @@ englishTestSet = englishTestSet.drop_duplicates(ignore_index=False)  # 11141
 # print(englishTrainingSet[index])
 
 
-#englishTrainingSet.to_csv(path_or_buf="D:/Work/Uni work/Comp3222 - MLT/CW/comp3222-mediaeval/englishTrainingSet.csv",encoding="utf8")
-englishTestSet.to_csv(path_or_buf="D:/Work/Uni work/Comp3222 - MLT/CW/comp3222-mediaeval/englishTrainingSet.csv",encoding="utf8")
+#englishTrainingSet.to_csv(path_or_buf="D:/Work/Uni work/Comp3222 - MLT/CW/comp3222-mediaeval/tfidfAttemptEnglish.csv",encoding="utf8")
+#englishTestSet.to_csv(path_or_buf="D:/Work/Uni work/Comp3222 - MLT/CW/comp3222-mediaeval/englishTrainingSet.csv",encoding="utf8")
 
 
 #englishTrainingSet = pd.read_csv(path_or_buf="D:/Work/Uni work/Comp3222 - MLT/CW/comp3222-mediaeval/englishTrainingSet.csv",encoding="utf8")
